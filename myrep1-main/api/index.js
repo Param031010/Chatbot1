@@ -29,6 +29,10 @@ module.exports = async (req, res) => {
     try {
       const { prompt } = req.body;
 
+      if (!prompt) {
+        return res.status(400).json({ error: 'Prompt is required' });
+      }
+
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
@@ -46,8 +50,11 @@ module.exports = async (req, res) => {
         bot: response.choices[0].message.content
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: error.message });
+      console.error('OpenAI API Error:', error);
+      res.status(500).json({ 
+        error: 'An error occurred while processing your request',
+        details: error.message 
+      });
     }
   } else {
     res.status(405).json({ message: 'Method not allowed' });

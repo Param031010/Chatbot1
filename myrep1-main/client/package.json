@@ -14,5 +14,8 @@
   "dependencies": {
     "esbuild": "^0.24.0",
     "rollup": "^4.28.0"
+  },
+  "build": {
+    "outDir": "public"
   }
 }

@@ -52,7 +52,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   const data = new FormData(form);
 
-  chatContainer.innerHTML += chatStripe(false ,data.get('prompt'));
+  chatContainer.innerHTML += chatStripe(false, data.get('prompt'));
   form.reset();
 
   const uniqueID = generateUniqueID();
@@ -63,27 +63,33 @@ const handleSubmit = async (e) => {
 
   loader(messageDiv);
 
-  const response = await fetch('/api', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      prompt: data.get('prompt')
-    })
-  });
+  try {
+    const response = await fetch('/api', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: data.get('prompt')
+      })
+    });
 
-  clearInterval(loadInterval);
-  messageDiv.innerHTML = ' ';
+    clearInterval(loadInterval);
+    messageDiv.innerHTML = ' ';
 
-  if(response.ok) {
-    const data = await response.json();
-    const parsedData = data.bot.trim();
-    typeText(messageDiv, parsedData);
-  } else {
-    const err = await response.text();
-    messageDiv.innerHTML = "This is an error text";
-    alert(err);
+    if (response.ok) {
+      const data = await response.json();
+      const parsedData = data.bot.trim();
+      typeText(messageDiv, parsedData);
+    } else {
+      const err = await response.text();
+      console.error('Error:', err);
+      messageDiv.innerHTML = "Sorry, there was an error. Please try again.";
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    clearInterval(loadInterval);
+    messageDiv.innerHTML = "Sorry, there was an error. Please try again.";
   }
 }
 
