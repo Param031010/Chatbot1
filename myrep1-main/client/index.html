@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joseph AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+      /* General styling */
+      body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #181a1b;
+        color: #f1f1f1;
+      }
+
+      /* Top bar styling */
+      #top_bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #343541;
+        color: white;
+        padding: 10px 20px;
+      }
+
+      /* JosephAI title styling */
+      #title {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      /* Updated Instructions box styling */
+      #instructions {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        background: linear-gradient(135deg, #f4f4f4, #ffffff);
+
+
+        border-radius: 20px;
+        padding: 50px;
+        width: 90%;
+        max-width: 700px;
+        height: auto;
+        max-height: 80%;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+        overflow: auto;
+        text-align: center;
+        z-index: 1000;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease;
+        opacity: 1;
+      }
+
+      @keyframes glowAnimation {
+  0% { box-shadow: 0 0 10px 3px rgba(128, 0, 128, 0.5); } /* Purple */
+  25% { box-shadow: 0 0 10px 3px rgba(0, 128, 255, 0.5); } /* Blue */
+  50% { box-shadow: 0 0 10px 3px rgba(255, 105, 180, 0.5); } /* Pink */
+  75% { box-shadow: 0 0 10px 3px rgba(75, 0, 130, 0.5); } /* Indigo */
+  100% { box-shadow: 0 0 10px 3px rgba(128, 0, 128, 0.5); } /* Purple */
+}
+
+#instructions:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+  animation: glowAnimation 10s infinite alternate;
+}
+
+
+
+#instructions h4 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #27ae60; /* Soft blue */
+}
+
+#instructions p {
+  font-size: 18px; /* Increase the font size */
+  font-weight: 700; /* Make it bold */
+  color: #7f8c8d; /* Keep the subtle green color */
+}
+
+#instructions h5 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 20px;
+  color: #16a085; /* Soft yellow */
+}
+
+#instructions ul li {
+  padding: 5px 0;
+  font-weight: 500;
+  color: #2980b9; /* Subtle red */
+}
+
+
+      #instructions ul li {
+        padding: 5px 0;
+        font-weight: 500;
+        color: #222;
+      }
+
+      #instructions .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      #instructions .close-btn:hover {
+        color: #000;
+      }
+
+      /* Content Section */
+      #app {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        padding: 10px;
+      }
+
+      /* Chat Section */
+      #chat_container {
+        height: 300px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 30px;
+        border: 1px solid #444;
+        font-size: 14px;
+        background-color: #2d2f33;
+        color: #f1f1f1;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      textarea:focus {
+        border-color: #4b8cf7;
+        box-shadow: 0 4px 8px rgba(75, 140, 247, 0.5);
+      }
+
+      button {
+        background-color: #343541;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        margin-left: 5px;
+      }
+
+      button img {
+        width: 20px;
+        height: 20px;
+      }
+
+      #toggle_instructions {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #4b8cf7;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        font-size: 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      #toggle_instructions:hover {
+        background: #3a74c6;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top bar -->
+    <div id="top_bar">
+      <!-- JosephAI title -->
+      <div id="title">JosephAI</div>
+    </div>
+
+    <!-- Main app content -->
+    <div id="app">
+      <!-- Chat Section -->
+      <div id="chat_container"></div>
+      <form>
+        <textarea id="prompt" name="prompt" rows="1" cols="1" placeholder="Ask Param.."></textarea>
+        <button type="submit">
+          <img src="assets/send.svg" />
+        </button>
+      </form>
+    </div>
+
+    <!-- Instructions box -->
+    <div id="instructions">
+      <button class="close-btn" onclick="closeInstructions()">×</button>
+      <h4>How to Use</h4>
+      <p>
+        Welcome to JosephAI! This project was made by Rachit Joseph and Param Raval.
+      </p>
+      <p>
+        This companion is designed to help you with 4rd semester topics, concepts, doubt clearance, and other academic queries.
+      </p>
+      <h5>Examples of questions you can ask:</h5>
+      <ul>
+        <li>What is a Heuristic Function?</li>
+        <li>What is a Binary Tree?</li>
+        <li>What is the Prim's algorithm?</li>
+      </ul>
+    </div>
+
+    <!-- Toggle Instructions Button -->
+    <button id="toggle_instructions" onclick="toggleInstructions()">Show Instructions</button>
+
+    <script type="module" src="script.js"></script>
+    <script>
+      function closeInstructions() {
+        const instructionsBox = document.getElementById('instructions');
+        instructionsBox.style.opacity = '0';
+        setTimeout(() => {
+          instructionsBox.style.display = 'none';
+        }, 500);
+      }
+
+      function toggleInstructions() {
+        const instructionsBox = document.getElementById('instructions');
+        if (instructionsBox.style.display === 'none' || instructionsBox.style.display === '') {
+          instructionsBox.style.display = 'flex';
+        } else {
+          instructionsBox.style.display = 'none';
+        }
+      }
+
+      const promptTextarea = document.getElementById('prompt');
+      promptTextarea.addEventListener('input', function() {
+        const instructionsBox = document.getElementById('instructions');
+        instructionsBox.style.opacity = '0';
+        setTimeout(() => {
+          instructionsBox.style.display = 'none';
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
