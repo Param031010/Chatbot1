@@ -64,10 +64,12 @@ const handleSubmit = async (e) => {
   loader(messageDiv);
 
   try {
+    console.log('Sending request to API...');
     const response = await fetch('/api', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
         prompt: data.get('prompt')
@@ -79,17 +81,18 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
       const data = await response.json();
+      console.log('Received response:', data);
       const parsedData = data.bot.trim();
       typeText(messageDiv, parsedData);
     } else {
       const err = await response.text();
-      console.error('Error:', err);
-      messageDiv.innerHTML = "Sorry, there was an error. Please try again.";
+      console.error('Server Error:', err);
+      messageDiv.innerHTML = "Server Error: " + (err || "Unknown error occurred");
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Network Error:', error);
     clearInterval(loadInterval);
-    messageDiv.innerHTML = "Sorry, there was an error. Please try again.";
+    messageDiv.innerHTML = "Network Error: Could not connect to the server. Please check your connection and try again.";
   }
 }
 

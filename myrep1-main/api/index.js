@@ -5,6 +5,8 @@ const openai = new OpenAI({
 });
 
 module.exports = async (req, res) => {
+  console.log('API Request received:', req.method);
+  
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,18 +23,31 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
-    res.status(200).json({ message: 'API is working' });
+    console.log('Health check request');
+    res.status(200).json({ 
+      message: 'API is working',
+      timestamp: new Date().toISOString()
+    });
     return;
   }
 
   if (req.method === 'POST') {
+    console.log('Received POST request');
     try {
       const { prompt } = req.body;
+      console.log('Received prompt:', prompt);
 
       if (!prompt) {
+        console.error('No prompt provided');
         return res.status(400).json({ error: 'Prompt is required' });
       }
 
+      if (!process.env.OPENAI_API_KEY) {
+        console.error('OpenAI API key is missing');
+        return res.status(500).json({ error: 'Server configuration error' });
+      }
+
+      console.log('Calling OpenAI API...');
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
@@ -46,6 +61,7 @@ module.exports = async (req, res) => {
         presence_penalty: 0
       });
 
+      console.log('OpenAI API response received');
       res.status(200).json({
         bot: response.choices[0].message.content
       });
@@ -53,10 +69,12 @@ module.exports = async (req, res) => {
       console.error('OpenAI API Error:', error);
       res.status(500).json({ 
         error: 'An error occurred while processing your request',
-        details: error.message 
+        details: error.message,
+        timestamp: new Date().toISOString()
       });
     }
   } else {
+    console.error('Invalid method:', req.method);
     res.status(405).json({ message: 'Method not allowed' });
   }
 }; 
