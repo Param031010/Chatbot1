@@ -5,76 +5,82 @@ const openai = new OpenAI({
 });
 
 module.exports = async (req, res) => {
-  console.log('API Request received:', req.method);
-  
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  try {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
 
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      res.status(200).end();
+      return;
+    }
 
-  if (req.method === 'GET') {
-    console.log('Health check request');
-    res.status(200).json({ 
-      message: 'API is working',
-      timestamp: new Date().toISOString()
-    });
-    return;
-  }
-
-  if (req.method === 'POST') {
-    console.log('Received POST request');
-    try {
-      const { prompt } = req.body;
-      console.log('Received prompt:', prompt);
-
-      if (!prompt) {
-        console.error('No prompt provided');
-        return res.status(400).json({ error: 'Prompt is required' });
-      }
-
-      if (!process.env.OPENAI_API_KEY) {
-        console.error('OpenAI API key is missing');
-        return res.status(500).json({ error: 'Server configuration error' });
-      }
-
-      console.log('Calling OpenAI API...');
-      const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'You are a Virtual Assistant that can clear doubts and resolve conceptual contradictions.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-        top_p: 1,
-        frequency_penalty: 0.5,
-        presence_penalty: 0
+    // Check if API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key is not configured');
+      return res.status(500).json({
+        error: 'OpenAI API key is not configured. Please add OPENAI_API_KEY to your environment variables.'
       });
+    }
 
-      console.log('OpenAI API response received');
-      res.status(200).json({
-        bot: response.choices[0].message.content
-      });
-    } catch (error) {
-      console.error('OpenAI API Error:', error);
-      res.status(500).json({ 
-        error: 'An error occurred while processing your request',
-        details: error.message,
+    if (req.method === 'GET') {
+      return res.status(200).json({
+        message: 'API is working',
+        apiKeyConfigured: !!process.env.OPENAI_API_KEY,
         timestamp: new Date().toISOString()
       });
     }
-  } else {
-    console.error('Invalid method:', req.method);
-    res.status(405).json({ message: 'Method not allowed' });
+
+    if (req.method === 'POST') {
+      const { prompt } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({
+          error: 'No prompt provided',
+          message: 'Please provide a prompt in the request body'
+        });
+      }
+
+      try {
+        const response = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: 'You are a Virtual Assistant that can clear doubts and resolve conceptual contradictions.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000,
+          top_p: 1,
+          frequency_penalty: 0.5,
+          presence_penalty: 0
+        });
+
+        return res.status(200).json({
+          bot: response.choices[0].message.content
+        });
+      } catch (openaiError) {
+        console.error('OpenAI API Error:', openaiError);
+        return res.status(500).json({
+          error: 'OpenAI API Error',
+          message: openaiError.message,
+          details: openaiError.response?.data || 'No additional details available'
+        });
+      }
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (error) {
+    console.error('Server Error:', error);
+    return res.status(500).json({
+      error: 'Server Error',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }; 
