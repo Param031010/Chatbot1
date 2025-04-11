@@ -86,7 +86,6 @@ const handleSubmit = async (e) => {
       }
     } else {
       const errorData = await response.json();
-      console.error('API Error:', errorData);
       messageDiv.innerHTML = `Error: ${errorData.message || 'Something went wrong. Please try again.'}`;
     }
   } catch (error) {
